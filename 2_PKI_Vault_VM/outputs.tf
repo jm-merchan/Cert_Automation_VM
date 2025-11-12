@@ -7,7 +7,7 @@ output "windows_rdp_connection" {
 # Ubuntu Server Outputs
 output "ubuntu_ssh_connection" {
   description = "SSH connection command for Ubuntu Server"
-  value       = "ssh -i ~/.ssh/aws_key ubuntu@${aws_eip.ubuntu.public_ip}"
+  value       = "ssh -i aws_key.pem ubuntu@${aws_eip.ubuntu.public_ip}"
 }
 
 
