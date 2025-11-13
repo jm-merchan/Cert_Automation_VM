@@ -121,7 +121,7 @@ resource "aws_security_group" "windows" {
     cidr_blocks = var.allowed_cidr_blocks
   }
 
-    # HTTPS
+  # HTTPS
   ingress {
     description = "HTTPS"
     from_port   = 443
@@ -211,11 +211,11 @@ resource "aws_key_pair" "main" {
 
 # Windows Server 2022 Instance
 resource "aws_instance" "windows" {
-  ami                  = data.aws_ami.windows_2022.id
-  instance_type        = var.windows_instance_type
-  subnet_id            = aws_subnet.public.id
-  key_name             = aws_key_pair.main.key_name
-  iam_instance_profile = aws_iam_instance_profile.instance_profile.name
+  ami                    = data.aws_ami.windows_2022.id
+  instance_type          = var.windows_instance_type
+  subnet_id              = aws_subnet.public.id
+  key_name               = aws_key_pair.main.key_name
+  iam_instance_profile   = aws_iam_instance_profile.instance_profile.name
   get_password_data      = true
   vpc_security_group_ids = [aws_security_group.windows.id]
 
@@ -299,8 +299,8 @@ resource "aws_instance" "ubuntu_acme" {
   })
 
   tags = {
-    Name = "${var.project_name}-ubuntu-acme"
-    OS   = "Ubuntu 22.04 LTS"
+    Name    = "${var.project_name}-ubuntu-acme"
+    OS      = "Ubuntu 22.04 LTS"
     Purpose = "ACME Client Testing"
   }
 }

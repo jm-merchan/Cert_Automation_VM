@@ -34,13 +34,6 @@ variable "allowed_cidr_blocks" {
   default     = ["0.0.0.0/0"] # IMPORTANT: Restrict this to your IP for production
 }
 
-variable "ssh_public_key" {
-  description = "SSH public key for EC2 instances"
-  type        = string
-  # Generate with: ssh-keygen -t rsa -b 4096 -f ~/.ssh/aws_key
-  # Then use the content of ~/.ssh/aws_key.pub
-}
-
 variable "windows_instance_type" {
   description = "Instance type for Windows Server"
   type        = string

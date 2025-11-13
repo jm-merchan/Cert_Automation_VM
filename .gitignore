@@ -34,3 +34,5 @@ terraform.rc
 *.key
 id_rsa*
 aws_key*
+
+*lock*

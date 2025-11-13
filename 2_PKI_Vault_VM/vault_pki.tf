@@ -32,14 +32,14 @@ resource "vault_pki_secret_backend_role" "role" {
   allowed_domains  = [var.hosted_dns_zone, "example.com", "test.com"]
   allow_subdomains = true
   allow_any_name   = true
-  no_store         = false  # Required for ACME - certificates must be stored
+  no_store         = false # Required for ACME - certificates must be stored
 }
 
 # Configure cluster paths for root CA (required for ACME)
 resource "vault_pki_secret_backend_config_cluster" "root_cluster" {
-  backend    = vault_mount.pki.path
-  path       = "${data.hcp_vault_cluster.example.vault_public_endpoint_url}/v1/admin/pki"
-  aia_path   = "${data.hcp_vault_cluster.example.vault_public_endpoint_url}/v1/admin/pki"
+  backend  = vault_mount.pki.path
+  path     = "${data.hcp_vault_cluster.example.vault_public_endpoint_url}/v1/admin/pki"
+  aia_path = "${data.hcp_vault_cluster.example.vault_public_endpoint_url}/v1/admin/pki"
 }
 
 resource "vault_pki_secret_backend_config_urls" "config-urls" {
@@ -48,7 +48,7 @@ resource "vault_pki_secret_backend_config_urls" "config-urls" {
   crl_distribution_points = ["{{cluster_aia_path}}/issuer/{{issuer_id}}/crl/der"]
   ocsp_servers            = ["{{cluster_path}}/ocsp"]
   enable_templating       = true
-  
+
   depends_on = [vault_pki_secret_backend_config_cluster.root_cluster]
 }
 
@@ -59,7 +59,7 @@ resource "vault_mount" "pki_int" {
 
   default_lease_ttl_seconds = 86400
   max_lease_ttl_seconds     = 157680000
-  
+
   # ACME required headers
   allowed_response_headers = [
     "Last-Modified",
@@ -67,7 +67,7 @@ resource "vault_mount" "pki_int" {
     "Replay-Nonce",
     "Link"
   ]
-  
+
   passthrough_request_headers = ["If-Modified-Since"]
 }
 
@@ -109,7 +109,7 @@ resource "vault_pki_secret_backend_role" "intermediate_role" {
   key_bits         = 4096
   allowed_domains  = [var.hosted_dns_zone, "example.com", "test.com"]
   allow_subdomains = true
-  no_store         = false  # Required for ACME - certificates must be stored
+  no_store         = false # Required for ACME - certificates must be stored
 }
 
 resource "vault_pki_secret_backend_cert" "example-dot-com" {
@@ -123,9 +123,9 @@ resource "vault_pki_secret_backend_cert" "example-dot-com" {
 
 # Configure cluster paths for intermediate CA (required for ACME)
 resource "vault_pki_secret_backend_config_cluster" "intermediate_cluster" {
-  backend    = vault_mount.pki_int.path
-  path       = "${data.hcp_vault_cluster.example.vault_public_endpoint_url}/v1/admin/pki_int"
-  aia_path   = "${data.hcp_vault_cluster.example.vault_public_endpoint_url}/v1/admin/pki_int"
+  backend  = vault_mount.pki_int.path
+  path     = "${data.hcp_vault_cluster.example.vault_public_endpoint_url}/v1/admin/pki_int"
+  aia_path = "${data.hcp_vault_cluster.example.vault_public_endpoint_url}/v1/admin/pki_int"
 }
 
 resource "vault_pki_secret_backend_config_urls" "config-urls_int" {
@@ -134,7 +134,7 @@ resource "vault_pki_secret_backend_config_urls" "config-urls_int" {
   crl_distribution_points = ["{{cluster_aia_path}}/issuer/{{issuer_id}}/crl/der"]
   ocsp_servers            = ["{{cluster_path}}/ocsp"]
   enable_templating       = true
-  
+
   depends_on = [vault_pki_secret_backend_config_cluster.intermediate_cluster]
 }
 
@@ -163,8 +163,8 @@ resource "vault_pki_secret_backend_config_acme" "intermediate_acme" {
   allowed_issuers          = ["*"]
   allowed_roles            = ["*"]
   default_directory_policy = "sign-verbatim"
-  eab_policy               = "always-required"  # Required for HCP Vault
-  
+  eab_policy               = "always-required" # Required for HCP Vault
+
   depends_on = [
     vault_pki_secret_backend_config_cluster.intermediate_cluster
   ]
@@ -177,8 +177,21 @@ resource "vault_generic_endpoint" "acme_eab" {
   disable_delete       = true
   ignore_absent_fields = true
   write_fields         = ["id", "key", "key_type", "acme_directory", "created_on"]
-  
+
   data_json = "{}"
-  
+
+  depends_on = [vault_pki_secret_backend_config_acme.intermediate_acme]
+}
+
+# Step 4: Generate separate EAB credentials for Terraform server certificate automation
+resource "vault_generic_endpoint" "acme_eab_terraform_server" {
+  path                 = "pki_int/acme/new-eab"
+  disable_read         = true
+  disable_delete       = true
+  ignore_absent_fields = true
+  write_fields         = ["id", "key", "key_type", "acme_directory", "created_on"]
+
+  data_json = "{}"
+
   depends_on = [vault_pki_secret_backend_config_acme.intermediate_acme]
 }
