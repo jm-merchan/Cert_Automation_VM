@@ -275,6 +275,40 @@ resource "aws_instance" "ubuntu" {
   }
 }
 
+# Ubuntu ACME Server Instance
+resource "aws_instance" "ubuntu_acme" {
+  ami                  = data.aws_ami.ubuntu.id
+  instance_type        = var.ubuntu_instance_type
+  subnet_id            = aws_subnet.public.id
+  key_name             = aws_key_pair.main.key_name
+  iam_instance_profile = aws_iam_instance_profile.instance_profile.name
+
+  vpc_security_group_ids = [aws_security_group.ubuntu.id]
+
+  root_block_device {
+    volume_size = var.ubuntu_disk_size
+    volume_type = "gp3"
+    encrypted   = true
+  }
+
+  user_data = templatefile("${path.module}/templates/ubuntu_acme_userdata.sh.tpl", {
+    project_name          = var.project_name
+    instance_name         = "${var.project_name}-ubuntu-acme"
+    dns_hostname          = "acme"
+    timezone              = var.ubuntu_timezone
+    hcp_vault_cluster_url = data.hcp_vault_cluster.example.vault_public_endpoint_url
+    hosted_zone           = var.hosted_dns_zone
+    eab_kid               = vault_generic_endpoint.acme_eab.write_data["id"]
+    eab_hmac_key          = vault_generic_endpoint.acme_eab.write_data["key"]
+  })
+
+  tags = {
+    Name = "${var.project_name}-ubuntu-acme"
+    OS   = "Ubuntu 22.04 LTS"
+    Purpose = "ACME Client Testing"
+  }
+}
+
 # Elastic IPs
 resource "aws_eip" "windows" {
   instance = aws_instance.windows.id
@@ -293,6 +327,17 @@ resource "aws_eip" "ubuntu" {
 
   tags = {
     Name = "${var.project_name}-ubuntu-eip"
+  }
+
+  depends_on = [aws_internet_gateway.main]
+}
+
+resource "aws_eip" "ubuntu_acme" {
+  instance = aws_instance.ubuntu_acme.id
+  domain   = "vpc"
+
+  tags = {
+    Name = "${var.project_name}-ubuntu-acme-eip"
   }
 
   depends_on = [aws_internet_gateway.main]
@@ -318,4 +363,15 @@ resource "aws_route53_record" "ubuntu" {
   records = [aws_eip.ubuntu.public_ip]
 
   depends_on = [aws_eip.ubuntu]
+}
+
+# Route53 A Record for Ubuntu ACME Server
+resource "aws_route53_record" "ubuntu_acme" {
+  zone_id = data.aws_route53_zone.main.zone_id
+  name    = "acme.${var.hosted_dns_zone}"
+  type    = "A"
+  ttl     = 300
+  records = [aws_eip.ubuntu_acme.public_ip]
+
+  depends_on = [aws_eip.ubuntu_acme]
 }

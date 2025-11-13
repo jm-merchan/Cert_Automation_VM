@@ -51,6 +51,39 @@ resource "aws_iam_role_policy_attachment" "security_compute_access" {
   policy_arn = data.aws_iam_policy.security_compute_access.arn
 }
 
+# IAM policy for Route53 access (needed for ACME DNS-01 challenge)
+resource "aws_iam_policy" "route53_acme" {
+  name        = "route53-acme-policy"
+  description = "Policy for ACME clients to update Route53 for DNS-01 challenges"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "route53:GetChange",
+          "route53:ListHostedZones"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "route53:ChangeResourceRecordSets",
+          "route53:ListResourceRecordSets"
+        ]
+        Resource = "arn:aws:route53:::hostedzone/*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "route53_acme" {
+  role       = aws_iam_role.vault_target_iam_role.name
+  policy_arn = aws_iam_policy.route53_acme.arn
+}
+
 resource "aws_iam_instance_profile" "instance_profile" {
   name = "demo_profile"
   role = aws_iam_role.vault_target_iam_role.name
