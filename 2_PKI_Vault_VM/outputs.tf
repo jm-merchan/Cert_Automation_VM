@@ -68,9 +68,16 @@ output "admin_token" {
 }
 
 
+# Private Key Output (for recovering aws.pem)
+output "tls_private_key_pem" {
+  description = "Private key in PEM format (save to aws.pem)"
+  value       = tls_private_key.rsa_4096_key.private_key_pem
+  sensitive   = true
+}
+
 output "windows_admin_password" {
   description = "Decrypted Administrator password for the Windows instance (null if not yet available)"
   # Avoid failing when password_data is empty by using try(); returns null until AWS provides password data
-  value     = rsadecrypt(aws_instance.windows.password_data, file(var.rsa_key))
+  value     = rsadecrypt(aws_instance.windows.password_data, tls_private_key.rsa_4096_key.private_key_pem)
   sensitive = true
 }
