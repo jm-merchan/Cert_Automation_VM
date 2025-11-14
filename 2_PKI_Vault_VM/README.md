@@ -25,16 +25,16 @@ This Terraform module deploys Windows and Ubuntu EC2 instances, configures Vault
 - `aws_security_group.windows/ubuntu`: Security groups for instances
 
 ### EC2 Instances
-- `aws_instance.windows`: Windows Server 2022 (with EIP)
-- `aws_instance.ubuntu`: Ubuntu 22.04 LTS (with EIP)
-- `aws_instance.ubuntu_acme`: Ubuntu with ACME client (HTTP-01, with EIP)
-- `aws_instance.windows_acme`: Windows with ACME client (HTTP-01, with EIP)
+- `aws_instance.windows`: Windows Server 2022 (public IP assigned)
+- `aws_instance.ubuntu`: Ubuntu 22.04 LTS (public IP assigned)
+- `aws_instance.ubuntu_acme`: Ubuntu with ACME client (HTTP-01, public IP assigned)
+- `aws_instance.windows_acme`: Windows with ACME client (HTTP-01, public IP assigned)
 - `aws_instance.ubuntu_acme_dns`: Ubuntu with ACME client (DNS-01, auto-assigned public IP)
 - `aws_instance.windows_acme_dns`: Windows with ACME client (DNS-01, auto-assigned public IP)
 
 ### DNS and IPs
-- `aws_eip.windows/ubuntu/ubuntu_acme/windows_acme`: Elastic IPs for base instances
-- `aws_route53_record.*`: A records for instance hostnames
+- Instances are reachable via their EC2 public IP addresses. Route53 A records point to the instances' public IPs (no Elastic IPs are allocated).
+- `aws_route53_record.*`: A records for instance hostnames (use instance public_ip)
 
 ### Vault PKI
 - `vault_mount.pki`: Root PKI mount

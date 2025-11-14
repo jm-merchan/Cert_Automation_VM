@@ -349,50 +349,6 @@ resource "aws_instance" "windows_acme" {
   }
 }
 
-# Elastic IPs
-resource "aws_eip" "windows" {
-  instance = aws_instance.windows.id
-  domain   = "vpc"
-
-  tags = {
-    Name = "${var.project_name}-windows-eip"
-  }
-
-  depends_on = [aws_internet_gateway.main]
-}
-
-resource "aws_eip" "ubuntu" {
-  instance = aws_instance.ubuntu.id
-  domain   = "vpc"
-
-  tags = {
-    Name = "${var.project_name}-ubuntu-eip"
-  }
-
-  depends_on = [aws_internet_gateway.main]
-}
-
-resource "aws_eip" "ubuntu_acme" {
-  instance = aws_instance.ubuntu_acme.id
-  domain   = "vpc"
-
-  tags = {
-    Name = "${var.project_name}-ubuntu-acme-eip"
-  }
-
-  depends_on = [aws_internet_gateway.main]
-}
-
-resource "aws_eip" "windows_acme" {
-  instance = aws_instance.windows_acme.id
-  domain   = "vpc"
-
-  tags = {
-    Name = "${var.project_name}-windows-acme-eip"
-  }
-
-  depends_on = [aws_internet_gateway.main]
-}
 
 # Route53 A Record for Windows Server
 resource "aws_route53_record" "windows" {
@@ -400,9 +356,7 @@ resource "aws_route53_record" "windows" {
   name    = "windows.${var.hosted_dns_zone}"
   type    = "A"
   ttl     = 300
-  records = [aws_eip.windows.public_ip]
-
-  depends_on = [aws_eip.windows]
+  records = [aws_instance.windows.public_ip]
 }
 
 # Route53 A Record for Ubuntu Server
@@ -411,9 +365,7 @@ resource "aws_route53_record" "ubuntu" {
   name    = "ubuntu.${var.hosted_dns_zone}"
   type    = "A"
   ttl     = 300
-  records = [aws_eip.ubuntu.public_ip]
-
-  depends_on = [aws_eip.ubuntu]
+  records = [aws_instance.ubuntu.public_ip]
 }
 
 # Route53 A Record for Ubuntu ACME Server
@@ -422,9 +374,7 @@ resource "aws_route53_record" "ubuntu_acme" {
   name    = "acme.${var.hosted_dns_zone}"
   type    = "A"
   ttl     = 300
-  records = [aws_eip.ubuntu_acme.public_ip]
-
-  depends_on = [aws_eip.ubuntu_acme]
+  records = [aws_instance.ubuntu_acme.public_ip]
 }
 
 # Route53 A Record for Windows ACME Server
@@ -433,9 +383,7 @@ resource "aws_route53_record" "windows_acme" {
   name    = "windows-acme.${var.hosted_dns_zone}"
   type    = "A"
   ttl     = 300
-  records = [aws_eip.windows_acme.public_ip]
-
-  depends_on = [aws_eip.windows_acme]
+  records = [aws_instance.windows_acme.public_ip]
 }
 
 # Ubuntu ACME DNS Server Instance (DNS-01 validation)
