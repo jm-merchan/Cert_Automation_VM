@@ -170,7 +170,6 @@ output "vault_ca_chain_url" {
 output "__get_vault_ca" {
   description = "Command to retrieve and display the Vault PKI CA chain"
   value       = "wget  ${data.hcp_vault_cluster.example.vault_public_endpoint_url}/v1/admin/pki_int/ca_chain"
-
 }
 
 output "__admin_token" {
