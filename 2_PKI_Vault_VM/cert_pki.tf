@@ -44,17 +44,17 @@ resource "vault_pki_secret_backend_cert" "app_cert" {
 
   # Certificate details
   common_name = "vault-api-${random_string.pki_cert_name.result}.${local.domain}"
-  
+
   # Optional: Add alternative names
   # alt_names = ["app.${local.domain}", "service.${local.domain}"]
   # ip_sans   = ["10.0.0.1"]
-  
+
   # TTL for the certificate (optional, defaults to role's max_ttl)
   ttl = "87600h" # 10 years in hours
 
   # Use auto-renew to handle certificate renewal
   auto_renew = true
-  
+
   # Minimum seconds remaining before renewal
   min_seconds_remaining = 604800 # 7 days in seconds
 
@@ -67,12 +67,12 @@ Extract individual components for storage in AWS Secrets Manager
 */
 locals {
   # Extract certificate components from Vault PKI response
-  pki_cert        = vault_pki_secret_backend_cert.app_cert.certificate      # Public certificate
-  pki_issuing_ca  = vault_pki_secret_backend_cert.app_cert.issuing_ca       # Issuing CA certificate
-  pki_ca_chain    = vault_pki_secret_backend_cert.app_cert.ca_chain         # Full CA chain
-  pki_private_key = vault_pki_secret_backend_cert.app_cert.private_key      # Private key
-  pki_serial      = vault_pki_secret_backend_cert.app_cert.serial_number    # Serial number
-  pki_expiration  = vault_pki_secret_backend_cert.app_cert.expiration       # Expiration timestamp
+  pki_cert        = vault_pki_secret_backend_cert.app_cert.certificate   # Public certificate
+  pki_issuing_ca  = vault_pki_secret_backend_cert.app_cert.issuing_ca    # Issuing CA certificate
+  pki_ca_chain    = vault_pki_secret_backend_cert.app_cert.ca_chain      # Full CA chain
+  pki_private_key = vault_pki_secret_backend_cert.app_cert.private_key   # Private key
+  pki_serial      = vault_pki_secret_backend_cert.app_cert.serial_number # Serial number
+  pki_expiration  = vault_pki_secret_backend_cert.app_cert.expiration    # Expiration timestamp
 }
 
 /*
@@ -81,13 +81,13 @@ Can be used in Kubernetes, Docker, or other services
 */
 locals {
   pki_tls_data = {
-    certificate    = local.pki_cert
-    private_key    = local.pki_private_key
-    ca_chain       = local.pki_ca_chain
-    issuing_ca     = local.pki_issuing_ca
-    serial_number  = local.pki_serial
-    expiration     = local.pki_expiration
-    common_name    = vault_pki_secret_backend_cert.app_cert.common_name
+    certificate   = local.pki_cert
+    private_key   = local.pki_private_key
+    ca_chain      = local.pki_ca_chain
+    issuing_ca    = local.pki_issuing_ca
+    serial_number = local.pki_serial
+    expiration    = local.pki_expiration
+    common_name   = vault_pki_secret_backend_cert.app_cert.common_name
   }
 }
 
@@ -101,26 +101,26 @@ resource "aws_secretsmanager_secret" "vault_pki_cert_bundle" {
   recovery_window_in_days = 7
 
   tags = {
-    Name         = "vault-pki-cert-bundle"
-    Purpose      = "vault-pki-tls-bundle"
-    ManagedBy    = "Terraform"
-    CertType     = "vault-api"
-    CommonName   = vault_pki_secret_backend_cert.app_cert.common_name
+    Name       = "vault-pki-cert-bundle"
+    Purpose    = "vault-pki-tls-bundle"
+    ManagedBy  = "Terraform"
+    CertType   = "vault-api"
+    CommonName = vault_pki_secret_backend_cert.app_cert.common_name
   }
 }
 
 resource "aws_secretsmanager_secret_version" "vault_pki_cert_bundle" {
   secret_id = aws_secretsmanager_secret.vault_pki_cert_bundle.id
   secret_string = jsonencode({
-    certificate    = local.pki_cert
-    private_key    = local.pki_private_key
-    ca_chain       = local.pki_ca_chain
-    issuing_ca     = local.pki_issuing_ca
-    serial_number  = local.pki_serial
-    common_name    = vault_pki_secret_backend_cert.app_cert.common_name
-    expiration     = local.pki_expiration
-    domain         = local.domain
-    created_at     = timestamp()
+    certificate   = local.pki_cert
+    private_key   = local.pki_private_key
+    ca_chain      = local.pki_ca_chain
+    issuing_ca    = local.pki_issuing_ca
+    serial_number = local.pki_serial
+    common_name   = vault_pki_secret_backend_cert.app_cert.common_name
+    expiration    = local.pki_expiration
+    domain        = local.domain
+    created_at    = timestamp()
   })
 
   depends_on = [vault_pki_secret_backend_cert.app_cert]
@@ -136,10 +136,10 @@ resource "aws_secretsmanager_secret" "vault_pki_certificate" {
   recovery_window_in_days = 7
 
   tags = {
-    Name         = "vault-pki-certificate"
-    Purpose      = "vault-pki-tls-cert"
-    ManagedBy    = "Terraform"
-    CertType     = "vault-api"
+    Name      = "vault-pki-certificate"
+    Purpose   = "vault-pki-tls-cert"
+    ManagedBy = "Terraform"
+    CertType  = "vault-api"
   }
 }
 
@@ -167,21 +167,21 @@ resource "aws_secretsmanager_secret" "vault_pki_private_key" {
   recovery_window_in_days = 7
 
   tags = {
-    Name         = "vault-pki-private-key"
-    Purpose      = "vault-pki-tls-key"
-    ManagedBy    = "Terraform"
-    CertType     = "vault-api"
-    Sensitive    = "true"
+    Name      = "vault-pki-private-key"
+    Purpose   = "vault-pki-tls-key"
+    ManagedBy = "Terraform"
+    CertType  = "vault-api"
+    Sensitive = "true"
   }
 }
 
 resource "aws_secretsmanager_secret_version" "vault_pki_private_key" {
   secret_id = aws_secretsmanager_secret.vault_pki_private_key.id
   secret_string = jsonencode({
-    private_key   = local.pki_private_key
-    common_name   = vault_pki_secret_backend_cert.app_cert.common_name
-    domain        = local.domain
-    created_at    = timestamp()
+    private_key = local.pki_private_key
+    common_name = vault_pki_secret_backend_cert.app_cert.common_name
+    domain      = local.domain
+    created_at  = timestamp()
   })
 
   depends_on = [vault_pki_secret_backend_cert.app_cert]
@@ -197,20 +197,20 @@ resource "aws_secretsmanager_secret" "vault_pki_ca_chain" {
   recovery_window_in_days = 7
 
   tags = {
-    Name         = "vault-pki-ca-chain"
-    Purpose      = "vault-pki-tls-ca"
-    ManagedBy    = "Terraform"
-    CertType     = "vault-api"
+    Name      = "vault-pki-ca-chain"
+    Purpose   = "vault-pki-tls-ca"
+    ManagedBy = "Terraform"
+    CertType  = "vault-api"
   }
 }
 
 resource "aws_secretsmanager_secret_version" "vault_pki_ca_chain" {
   secret_id = aws_secretsmanager_secret.vault_pki_ca_chain.id
   secret_string = jsonencode({
-    ca_chain      = local.pki_ca_chain
-    issuing_ca    = local.pki_issuing_ca
-    domain        = local.domain
-    created_at    = timestamp()
+    ca_chain   = local.pki_ca_chain
+    issuing_ca = local.pki_issuing_ca
+    domain     = local.domain
+    created_at = timestamp()
   })
 
   depends_on = [vault_pki_secret_backend_cert.app_cert]

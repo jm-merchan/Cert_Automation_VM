@@ -111,7 +111,7 @@ resource "vault_pki_secret_backend_role" "intermediate_role" {
   allow_subdomains = true
   no_store         = false # Required for ACME - certificates must be stored
 }
-
+/*
 resource "vault_pki_secret_backend_cert" "example-dot-com" {
   issuer_ref  = vault_pki_secret_backend_issuer.intermediate.issuer_ref
   backend     = vault_pki_secret_backend_role.intermediate_role.backend
@@ -120,6 +120,7 @@ resource "vault_pki_secret_backend_cert" "example-dot-com" {
   ttl         = 3600
   revoke      = true
 }
+*/
 
 # Configure cluster paths for intermediate CA (required for ACME)
 resource "vault_pki_secret_backend_config_cluster" "intermediate_cluster" {
@@ -185,6 +186,45 @@ resource "vault_generic_endpoint" "acme_eab" {
 
 # Step 4: Generate separate EAB credentials for Terraform server certificate automation
 resource "vault_generic_endpoint" "acme_eab_terraform_server" {
+  path                 = "pki_int/acme/new-eab"
+  disable_read         = true
+  disable_delete       = true
+  ignore_absent_fields = true
+  write_fields         = ["id", "key", "key_type", "acme_directory", "created_on"]
+
+  data_json = "{}"
+
+  depends_on = [vault_pki_secret_backend_config_acme.intermediate_acme]
+}
+
+# Step 5: Generate EAB credentials for Windows ACME instance
+resource "vault_generic_endpoint" "acme_eab_windows" {
+  path                 = "pki_int/acme/new-eab"
+  disable_read         = true
+  disable_delete       = true
+  ignore_absent_fields = true
+  write_fields         = ["id", "key", "key_type", "acme_directory", "created_on"]
+
+  data_json = "{}"
+
+  depends_on = [vault_pki_secret_backend_config_acme.intermediate_acme]
+}
+
+# Step 6: Generate EAB credentials for Ubuntu ACME DNS instance
+resource "vault_generic_endpoint" "acme_eab_ubuntu_dns" {
+  path                 = "pki_int/acme/new-eab"
+  disable_read         = true
+  disable_delete       = true
+  ignore_absent_fields = true
+  write_fields         = ["id", "key", "key_type", "acme_directory", "created_on"]
+
+  data_json = "{}"
+
+  depends_on = [vault_pki_secret_backend_config_acme.intermediate_acme]
+}
+
+# Step 7: Generate EAB credentials for Windows ACME DNS instance
+resource "vault_generic_endpoint" "acme_eab_windows_dns" {
   path                 = "pki_int/acme/new-eab"
   disable_read         = true
   disable_delete       = true

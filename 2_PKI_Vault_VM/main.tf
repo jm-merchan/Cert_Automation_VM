@@ -130,6 +130,15 @@ resource "aws_security_group" "windows" {
     cidr_blocks = var.allowed_cidr_blocks
   }
 
+  # HTTP
+  ingress {
+    description = "HTTP"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = var.allowed_cidr_blocks
+  }
+
   # All outbound traffic
   egress {
     from_port   = 0
@@ -305,6 +314,40 @@ resource "aws_instance" "ubuntu_acme" {
   }
 }
 
+# Windows Server 2022 ACME Instance
+resource "aws_instance" "windows_acme" {
+  ami                    = data.aws_ami.windows_2022.id
+  instance_type          = var.windows_instance_type
+  subnet_id              = aws_subnet.public.id
+  key_name               = aws_key_pair.main.key_name
+  iam_instance_profile   = aws_iam_instance_profile.instance_profile.name
+  get_password_data      = true
+  vpc_security_group_ids = [aws_security_group.windows.id]
+
+  root_block_device {
+    volume_size = var.windows_disk_size
+    volume_type = "gp3"
+    encrypted   = true
+  }
+
+  user_data = templatefile("${path.module}/templates/windows_acme_userdata.ps1.tpl", {
+    project_name          = var.project_name
+    instance_name         = "${var.project_name}-windows-acme-2022"
+    timezone              = var.windows_timezone
+    hcp_vault_cluster_url = data.hcp_vault_cluster.example.vault_public_endpoint_url
+    dns_hostname          = "windows-acme"
+    hosted_zone           = var.hosted_dns_zone
+    eab_kid               = vault_generic_endpoint.acme_eab_windows.write_data["id"]
+    eab_hmac_key          = vault_generic_endpoint.acme_eab_windows.write_data["key"]
+  })
+
+  tags = {
+    Name    = "${var.project_name}-windows-acme-2022"
+    OS      = "Windows Server 2022"
+    Purpose = "ACME Client Testing"
+  }
+}
+
 # Elastic IPs
 resource "aws_eip" "windows" {
   instance = aws_instance.windows.id
@@ -334,6 +377,17 @@ resource "aws_eip" "ubuntu_acme" {
 
   tags = {
     Name = "${var.project_name}-ubuntu-acme-eip"
+  }
+
+  depends_on = [aws_internet_gateway.main]
+}
+
+resource "aws_eip" "windows_acme" {
+  instance = aws_instance.windows_acme.id
+  domain   = "vpc"
+
+  tags = {
+    Name = "${var.project_name}-windows-acme-eip"
   }
 
   depends_on = [aws_internet_gateway.main]
@@ -371,3 +425,106 @@ resource "aws_route53_record" "ubuntu_acme" {
 
   depends_on = [aws_eip.ubuntu_acme]
 }
+
+# Route53 A Record for Windows ACME Server
+resource "aws_route53_record" "windows_acme" {
+  zone_id = data.aws_route53_zone.main.zone_id
+  name    = "windows-acme.${var.hosted_dns_zone}"
+  type    = "A"
+  ttl     = 300
+  records = [aws_eip.windows_acme.public_ip]
+
+  depends_on = [aws_eip.windows_acme]
+}
+
+# Ubuntu ACME DNS Server Instance (DNS-01 validation)
+resource "aws_instance" "ubuntu_acme_dns" {
+  ami                  = data.aws_ami.ubuntu.id
+  instance_type        = var.ubuntu_instance_type
+  subnet_id            = aws_subnet.public.id
+  key_name             = aws_key_pair.main.key_name
+  iam_instance_profile = aws_iam_instance_profile.instance_profile.name
+
+  vpc_security_group_ids = [aws_security_group.ubuntu.id]
+
+  root_block_device {
+    volume_size = var.ubuntu_disk_size
+    volume_type = "gp3"
+    encrypted   = true
+  }
+
+  user_data = templatefile("${path.module}/templates/ubuntu_acme_dns_userdata.sh.tpl", {
+    project_name          = var.project_name
+    instance_name         = "${var.project_name}-ubuntu-acme-dns"
+    dns_hostname          = "acme-dns"
+    timezone              = var.ubuntu_timezone
+    hcp_vault_cluster_url = data.hcp_vault_cluster.example.vault_public_endpoint_url
+    hosted_zone           = var.hosted_dns_zone
+    eab_kid               = vault_generic_endpoint.acme_eab_ubuntu_dns.write_data["id"]
+    eab_hmac_key          = vault_generic_endpoint.acme_eab_ubuntu_dns.write_data["key"]
+  })
+
+  tags = {
+    Name    = "${var.project_name}-ubuntu-acme-dns"
+    OS      = "Ubuntu 22.04 LTS"
+    Purpose = "ACME Client Testing - DNS-01"
+  }
+}
+
+# Windows Server 2022 ACME DNS Instance (DNS-01 validation)
+resource "aws_instance" "windows_acme_dns" {
+  ami                    = data.aws_ami.windows_2022.id
+  instance_type          = var.windows_instance_type
+  subnet_id              = aws_subnet.public.id
+  key_name               = aws_key_pair.main.key_name
+  iam_instance_profile   = aws_iam_instance_profile.instance_profile.name
+  get_password_data      = true
+  vpc_security_group_ids = [aws_security_group.windows.id]
+
+  root_block_device {
+    volume_size = var.windows_disk_size
+    volume_type = "gp3"
+    encrypted   = true
+  }
+
+  user_data = templatefile("${path.module}/templates/windows_acme_dns_userdata.ps1.tpl", {
+    project_name          = var.project_name
+    instance_name         = "${var.project_name}-windows-acme-dns-2022"
+    timezone              = var.windows_timezone
+    hcp_vault_cluster_url = data.hcp_vault_cluster.example.vault_public_endpoint_url
+    dns_hostname          = "windows-acme-dns"
+    hosted_zone           = var.hosted_dns_zone
+    eab_kid               = vault_generic_endpoint.acme_eab_windows_dns.write_data["id"]
+    eab_hmac_key          = vault_generic_endpoint.acme_eab_windows_dns.write_data["key"]
+  })
+
+  tags = {
+    Name    = "${var.project_name}-windows-acme-dns-2022"
+    OS      = "Windows Server 2022"
+    Purpose = "ACME Client Testing - DNS-01"
+  }
+}
+
+# Route53 A Record for Ubuntu ACME DNS Server
+resource "aws_route53_record" "ubuntu_acme_dns" {
+  zone_id = data.aws_route53_zone.main.zone_id
+  name    = "acme-dns.${var.hosted_dns_zone}"
+  type    = "A"
+  ttl     = 300
+  records = [aws_instance.ubuntu_acme_dns.public_ip]
+
+  depends_on = [aws_instance.ubuntu_acme_dns]
+}
+
+
+# Route53 A Record for Windows ACME DNS Server
+resource "aws_route53_record" "windows_acme_dns" {
+  zone_id = data.aws_route53_zone.main.zone_id
+  name    = "windows-acme-dns.${var.hosted_dns_zone}"
+  type    = "A"
+  ttl     = 300
+  records = [aws_instance.windows_acme_dns.public_ip]
+
+  depends_on = [aws_instance.windows_acme_dns]
+}
+

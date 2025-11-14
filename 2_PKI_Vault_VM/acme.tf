@@ -67,7 +67,15 @@ resource "acme_registration" "registration" {
     hmac_base64 = vault_generic_endpoint.acme_eab_terraform_server.write_data["key"]
   }
 
-  depends_on = [vault_generic_endpoint.acme_eab_terraform_server]
+  # Prevent errors during destroy when Vault PKI is deleted first
+  lifecycle {
+    create_before_destroy = false
+  }
+
+  depends_on = [
+    vault_generic_endpoint.acme_eab_terraform_server,
+    vault_pki_secret_backend_config_acme.intermediate_acme
+  ]
 }
 
 resource "random_string" "random_name" {
@@ -89,7 +97,7 @@ resource "acme_certificate" "certificate" {
 
   # Optional: Add wildcard certificate
   # subject_alternative_names = ["*.${local.domain}"]
-/*  
+  /*  
   http_challenge {
   # Using HTTP-01 challenge (can also use DNS-01 with route53)
     # This would require the domain to be accessible via HTTP
@@ -99,13 +107,21 @@ resource "acme_certificate" "certificate" {
 
   # Alternative: Use DNS challenge with Route53
   dns_challenge {
-     provider = "route53"
-     config = {
-       AWS_REGION = var.aws_region
-     }
-}
+    provider = "route53"
+    config = {
+      AWS_REGION = var.aws_region
+    }
+  }
 
-  depends_on = [acme_registration.registration]
+  # Prevent errors during destroy when Vault PKI is deleted first
+  lifecycle {
+    create_before_destroy = false
+  }
+
+  depends_on = [
+    acme_registration.registration,
+    vault_pki_secret_backend_config_acme.intermediate_acme
+  ]
 }
 
 
@@ -149,9 +165,9 @@ resource "aws_secretsmanager_secret" "vault_tls_certificate" {
   recovery_window_in_days = 7 # Minimum recovery window
 
   tags = {
-    Name        = "terraform-acme-certificate"
-    Purpose     = "terraform-acme-tls-cert"
-    ManagedBy   = "Terraform"
+    Name      = "terraform-acme-certificate"
+    Purpose   = "terraform-acme-tls-cert"
+    ManagedBy = "Terraform"
   }
 }
 
@@ -201,9 +217,9 @@ resource "aws_secretsmanager_secret" "vault_tls_ca_certificate" {
   recovery_window_in_days = 7 # Minimum recovery window
 
   tags = {
-    Name        = "terraform-acme-ca-certificate"
-    Purpose     = "terraform-acme-tls-ca"
-    ManagedBy   = "Terraform"
+    Name      = "terraform-acme-ca-certificate"
+    Purpose   = "terraform-acme-tls-ca"
+    ManagedBy = "Terraform"
   }
 }
 
