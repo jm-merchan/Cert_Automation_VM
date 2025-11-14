@@ -1,3 +1,11 @@
+################################################################################
+# vault_aws_auth.tf
+#
+# Configures Vault AWS Auth backend, roles, and policies for EC2 authentication.
+# - Enables AWS Auth method in Vault
+# - Sets up IAM role binding and Vault policy for PKI issuance
+################################################################################
+
 resource "vault_auth_backend" "aws" {
   type = "aws"
 }

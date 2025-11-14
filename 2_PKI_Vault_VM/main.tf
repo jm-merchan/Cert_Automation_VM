@@ -271,7 +271,8 @@ resource "aws_instance" "ubuntu" {
     dns_hostname          = "ubuntu"
     timezone              = var.ubuntu_timezone
     hcp_vault_cluster_url = data.hcp_vault_cluster.example.vault_public_endpoint_url
-    hosted_zone           = var.hosted_dns_zone
+
+    hosted_zone = var.hosted_dns_zone
   })
 
   tags = {

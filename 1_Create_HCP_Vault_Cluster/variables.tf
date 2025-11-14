@@ -1,3 +1,12 @@
+################################################################################
+# variables.tf
+#
+# Defines input variables for the HCP Vault Cluster Terraform project.
+# Each variable controls resource configuration, naming, networking, and instance details.
+#
+# Update defaults and descriptions as needed for your environment.
+################################################################################
+
 variable "aws_region" {
   description = "AWS region to deploy resources"
   type        = string

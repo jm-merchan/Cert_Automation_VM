@@ -1,3 +1,12 @@
+################################################################################
+# aws_iam.tf
+#
+# Configures AWS IAM roles, policies, and instance profiles for Vault and ACME automation.
+# - EC2 role for Vault AWS Auth
+# - IAM policies for Route53 DNS-01 challenge
+# - IAM user for Vault AWS Auth method
+################################################################################
+
 /*
 data "aws_ami" "hc-security-base" {
   filter {

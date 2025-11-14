@@ -1,3 +1,11 @@
+################################################################################
+# terraform.tf
+#
+# Specifies required providers, versions, and configures AWS and HCP providers.
+# - Sets up provider blocks for AWS and HCP
+# - Provisions HCP HVN and Vault Cluster resources
+################################################################################
+
 terraform {
   required_providers {
     aws = {

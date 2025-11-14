@@ -32,11 +32,6 @@ output "ubuntu_acme_public_ip" {
   value       = aws_eip.ubuntu_acme.public_ip
 }
 
-# Windows ACME Server Outputs
-output "windows_acme_rdp_connection" {
-  description = "RDP connection string for Windows ACME Server"
-  value       = "mstsc /v:${aws_eip.windows_acme.public_ip}"
-}
 
 output "windows_acme_url" {
   description = "HTTPS URL for Windows ACME server"

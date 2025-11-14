@@ -1,3 +1,10 @@
+################################################################################
+# outputs.tf
+#
+# Defines Terraform outputs for HCP Vault Cluster information and credentials.
+# Use these outputs to access Vault endpoints and admin tokens after provisioning.
+################################################################################
+
 # Windows Server Outputs
 output "admin_token" {
   description = "HCP Vault Cluster Admin Token"

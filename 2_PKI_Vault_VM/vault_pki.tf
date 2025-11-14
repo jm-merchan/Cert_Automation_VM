@@ -1,3 +1,14 @@
+################################################################################
+# vault_pki.tf
+#
+# Configures HashiCorp Vault PKI mounts, root and intermediate CAs, roles,
+# cluster paths, URLs, and ACME enablement for certificate automation.
+#
+# - Sets up root and intermediate CA hierarchy
+# - Enables ACME on intermediate CA (with EAB)
+# - Generates EAB credentials for ACME clients
+################################################################################
+
 resource "vault_mount" "pki" {
   path        = "pki"
   type        = "pki"

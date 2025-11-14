@@ -79,7 +79,8 @@ resource "acme_registration" "registration" {
 }
 
 resource "random_string" "random_name" {
-  length  = 4
+  length = 4
+
   upper   = false
   lower   = true
   numeric = false
