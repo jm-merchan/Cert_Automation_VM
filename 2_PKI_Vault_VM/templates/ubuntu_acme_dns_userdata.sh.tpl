@@ -59,6 +59,13 @@ else
     exit 1
 fi
 
+# Create Certbot deploy hook to reload Nginx after renewal
+sudo tee /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh > /dev/null <<'EOF'
+#!/bin/bash
+systemctl reload nginx
+EOF
+sudo chmod +x /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh
+
 # Configure timezone
 echo "Configuring timezone to ${timezone}..."
 timedatectl set-timezone ${timezone}
