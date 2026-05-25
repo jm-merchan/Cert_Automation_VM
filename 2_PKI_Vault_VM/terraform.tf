@@ -40,11 +40,11 @@ provider "hcp" {
 }
 
 resource "hcp_vault_cluster_admin_token" "admin_token" {
-  cluster_id = "vault-cluster"
+  cluster_id = "vault-demo-cluster"
 }
 
 data "hcp_vault_cluster" "example" {
-  cluster_id = "vault-cluster"
+  cluster_id = "vault-demo-cluster"
 }
 
 provider "vault" {

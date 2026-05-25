@@ -14,7 +14,7 @@ terraform {
     }
     hcp = {
       source  = "hashicorp/hcp"
-      version = "0.110.0"
+      version = "0.111.0"
     }
   }
 }
@@ -29,14 +29,14 @@ provider "hcp" {
 
 
 resource "hcp_hvn" "example" {
-  hvn_id         = "hvn-cert-automation"
+  hvn_id         = "hvn-cert-auto"
   cloud_provider = "aws"
   region         = var.aws_region
   cidr_block     = "172.24.16.0/20"
 }
 
 resource "hcp_vault_cluster" "example" {
-  cluster_id = "vault-cluster"
+  cluster_id = "vault-demo-cluster"
   hvn_id     = hcp_hvn.example.hvn_id
   tier       = "standard_large"
   public_endpoint = true
@@ -56,5 +56,5 @@ resource "hcp_vault_cluster" "example" {
 }
 
 resource "hcp_vault_cluster_admin_token" "admin_token" {
-  cluster_id = "vault-cluster"
+  cluster_id = "vault-demo-cluster"
 }

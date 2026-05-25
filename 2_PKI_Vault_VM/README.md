@@ -197,3 +197,49 @@ This module creates several EC2 instances, each with specific configurations bas
   - Certificate binding to IIS SSL bindings
   - Scheduled task for renewal
   - Vault CA imported to Windows certificate store
+
+## Verify Certificate Dates
+
+Use the following `openssl` commands to check the `Not Before` / `Not After` dates on each host's certificate.
+
+### 1. Windows — Vault Agent (windows.jose-merchan.sbx.hashidemos.io)
+```sh
+openssl s_client -connect windows.jose-merchan.sbx.hashidemos.io:443 -servername windows.jose-merchan.sbx.hashidemos.io </dev/null 2>/dev/null \
+  | openssl x509 -noout -dates
+```
+
+### 2. Ubuntu — Vault Agent (ubuntu.jose-merchan.sbx.hashidemos.io)
+```sh
+openssl s_client -connect ubuntu.jose-merchan.sbx.hashidemos.io:443 -servername ubuntu.jose-merchan.sbx.hashidemos.io </dev/null 2>/dev/null \
+  | openssl x509 -noout -dates
+```
+
+### 3. Ubuntu — ACME HTTP-01 (acme.jose-merchan.sbx.hashidemos.io)
+```sh
+openssl s_client -connect acme.jose-merchan.sbx.hashidemos.io:443 -servername acme.jose-merchan.sbx.hashidemos.io </dev/null 2>/dev/null \
+  | openssl x509 -noout -dates
+```
+
+### 4. Windows — ACME HTTP-01 (windows-acme.jose-merchan.sbx.hashidemos.io)
+```sh
+openssl s_client -connect windows-acme.jose-merchan.sbx.hashidemos.io:443 -servername windows-acme.jose-merchan.sbx.hashidemos.io </dev/null 2>/dev/null \
+  | openssl x509 -noout -dates
+```
+
+### 5. Ubuntu — ACME DNS-01 (acme-dns.jose-merchan.sbx.hashidemos.io)
+```sh
+openssl s_client -connect acme-dns.jose-merchan.sbx.hashidemos.io:443 -servername acme-dns.jose-merchan.sbx.hashidemos.io </dev/null 2>/dev/null \
+  | openssl x509 -noout -dates
+```
+
+### 6. Windows — ACME DNS-01 (windows-acme-dns.jose-merchan.sbx.hashidemos.io)
+```sh
+openssl s_client -connect windows-acme-dns.jose-merchan.sbx.hashidemos.io:443 -servername windows-acme-dns.jose-merchan.sbx.hashidemos.io </dev/null 2>/dev/null \
+  | openssl x509 -noout -dates
+```
+
+> **Note**: The Vault PKI CA is not publicly trusted. If `openssl` returns a verification error, add `-CAfile vault-ca-chain.pem` (downloaded via the `vault_ca_chain_url` output) to trust the Vault CA:
+> ```sh
+> openssl s_client -connect <host>:443 -servername <host> -CAfile vault-ca-chain.pem </dev/null 2>/dev/null \
+>   | openssl x509 -noout -dates
+> ```
