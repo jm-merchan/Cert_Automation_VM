@@ -1,0 +1,9 @@
+base_namespace                 = "admin"
+namespace_prefix               = "team"
+namespace_count                = 5
+secrets_per_namespace          = 10
+updated_secrets_per_namespace  = 5
+userpass_users_per_namespace   = 2
+kv_mount_path                  = "secrets"
+userpass_mount_path            = "userpass"
+userpass_password_prefix       = "ChangeMe"

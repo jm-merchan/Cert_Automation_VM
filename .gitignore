@@ -37,3 +37,8 @@ aws_key*
 
 *lock*
 *.lock.hcl
+
+.vscode/*
+mcp.json
+*txt
+*.json

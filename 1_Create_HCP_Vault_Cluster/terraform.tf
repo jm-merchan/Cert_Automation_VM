@@ -40,7 +40,7 @@ resource "hcp_vault_cluster" "example" {
   hvn_id     = hcp_hvn.example.hvn_id
   tier       = "standard_large"
   public_endpoint = true
-  /*
+  
   metrics_config {
     datadog_api_key = "test_datadog"
     datadog_region  = "us1"
@@ -49,7 +49,7 @@ resource "hcp_vault_cluster" "example" {
     datadog_api_key = "test_datadog"
     datadog_region  = "us1"
   }
-  */
+  
   lifecycle {
     prevent_destroy = false
   }

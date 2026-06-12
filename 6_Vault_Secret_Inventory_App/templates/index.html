@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vault Secret Inventory</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-left">
+      <h1>Vault Secret Inventory</h1>
+      <p>Inventario de secretos estaticos por namespace y motor KV.</p>
+    </div>
+    <div class="hero-right">
+      <span id="scan-status" class="pill">Sin escaneo</span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel setup-panel">
+      <h2>Conexion inicial</h2>
+      <form id="config-form" class="form-grid">
+        <label>
+          Vault Address
+          <input type="text" name="vaultAddress" placeholder="https://vault.example.com" value="{{.Config.VaultAddress}}" required />
+        </label>
+        <label>
+          Periodic Token
+          <input type="password" name="periodicToken" placeholder="hvs.xxxxx" value="{{.Config.PeriodicToken}}" required />
+        </label>
+        <label>
+          Namespace Origen
+          <input type="text" name="sourceNamespace" placeholder="admin" value="{{.Config.SourceNamespace}}" />
+        </label>
+        <label>
+          Umbral Naranja (min)
+          <input type="number" name="orangeThresholdMinutes" min="1" value="{{.Config.OrangeThresholdMinutes}}" />
+        </label>
+        <label>
+          Umbral Rojo (min)
+          <input type="number" name="redThresholdMinutes" min="1" value="{{.Config.RedThresholdMinutes}}" />
+        </label>
+        <label>
+          URL Webhook Alertas
+          <input type="url" name="webhookUrl" placeholder="https://hooks.example.com/vault" value="{{.Config.WebhookURL}}" />
+        </label>
+        <label>
+          Intervalo Escaneo (s)
+          <input type="number" name="scanIntervalSeconds" min="10" value="{{.Config.ScanIntervalSeconds}}" />
+        </label>
+        <label>
+          Topic de Eventos
+          <input type="text" name="eventTopic" placeholder="kv*" value="{{.Config.EventTopic}}" />
+        </label>
+        <label>
+          Filtro de Eventos
+          <input type="text" name="eventFilter" placeholder="operation != &quot;data-write&quot;" value="{{.Config.EventFilter}}" />
+        </label>
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">Guardar y Escanear</button>
+          <button type="button" id="scan-btn" class="btn-secondary">Escanear ahora</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel">
+      <div class="tabs-header">
+        <h2>Namespaces</h2>
+        <div id="namespace-tabs" class="tabs"></div>
+      </div>
+      <div class="summary" id="summary"></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Namespace</th>
+              <th>Engine KV</th>
+              <th>Secret Path</th>
+              <th>KV Version</th>
+              <th>Created</th>
+              <th>Updated</th>
+              <th>Age (min)</th>
+              <th>Owner</th>
+              <th>Email</th>
+              <th>App</th>
+              <th>Current Version</th>
+            </tr>
+          </thead>
+          <tbody id="secrets-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Alertas API/Webhook (&gt; umbral rojo)</h2>
+      <pre id="alerts-json" class="alerts-box"></pre>
+    </section>
+
+    <section class="panel">
+      <h2>Eventos de Vault (stream)</h2>
+      <pre id="events-json" class="alerts-box"></pre>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

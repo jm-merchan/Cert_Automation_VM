@@ -80,6 +80,44 @@ resource "vault_mount" "pki_int" {
   ]
 
   passthrough_request_headers = ["If-Modified-Since"]
+
+  # Audit non-hmac request keys: fields logged in plaintext on audit logs
+  audit_non_hmac_request_keys = [
+    "csr",
+    "certificate",
+    "issuer_ref",
+    "common_name",
+    "alt_names",
+    "other_sans",
+    "ip_sans",
+    "uri_sans",
+    "ttl",
+    "not_after",
+    "serial_number",
+    "key_type",
+    "private_key_format",
+    "ou",
+    "organization",
+    "country",
+    "locality",
+    "province",
+    "street_address",
+    "postal_code",
+    "permitted_dns_domains",
+    "policy_identitiers",
+    "ext_key_usage_oids",
+  ]
+
+  # Audit non-hmac response keys: fields logged in plaintext on audit logs
+  audit_non_hmac_response_keys = [
+    "certificate",
+    "issuing_ca",
+    "error",
+    "serial_number",
+    "ca_chain",
+    "private_key_type",
+    "expiration",
+  ]
 }
 
 resource "vault_pki_secret_backend_intermediate_cert_request" "csr-request" {
