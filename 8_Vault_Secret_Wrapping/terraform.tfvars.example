@@ -1,0 +1,11 @@
+# HCP Vault Dedicated commonly uses the admin namespace.
+vault_namespace = "admin"
+
+# The static frontend is served locally on this origin by default.
+cors_allowed_origins = ["http://localhost:8788"]
+
+# HCP Vault Dedicated may not allow this demo token to configure sys/config/cors.
+# Keep this disabled when using the included local proxy server.
+enable_cors = false
+
+wrap_ttl = "5m"

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Vault Secret Wrapping Receiver</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="panel intro">
+        <p class="eyebrow">Vault Response Wrapping</p>
+        <h1>Receive a wrapped secret</h1>
+        <p class="lede">Paste the single-use wrapping token from the sender. The browser calls Vault unwrap directly and shows the payload returned from the cubbyhole token.</p>
+      </section>
+
+      <section class="panel tool" aria-label="Unwrap token form">
+        <label for="vault-address">Vault address</label>
+        <input id="vault-address" type="url" autocomplete="off" placeholder="https://vault.example.com:8200">
+
+        <label for="vault-namespace">Vault namespace</label>
+        <input id="vault-namespace" type="text" autocomplete="off" placeholder="admin">
+
+        <label for="wrap-token">Wrapping token</label>
+        <textarea id="wrap-token" rows="5" spellcheck="false" placeholder="Paste hvs... wrapping token"></textarea>
+
+        <div class="actions">
+          <button id="unwrap-button" type="button">Unwrap secret</button>
+          <button id="reset-button" type="button" class="secondary">Reset</button>
+        </div>
+
+        <p id="status" class="status" role="status">Waiting for a wrapping token.</p>
+      </section>
+
+      <section class="panel result" aria-label="Unwrapped secret result">
+        <div class="result-header">
+          <h2>Unwrapped payload</h2>
+          <span id="result-state">empty</span>
+        </div>
+        <pre id="result-output">{}</pre>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+github_owner = "your-github-user-or-org"
+github_repo  = "vault-actions-oidc-demo"
+
+# Keep this narrow for production. Use refs/heads/main for a single branch or refs/tags/v* for release tags.
+github_ref = "refs/heads/main"
+
+# HCP Vault Dedicated commonly uses the admin namespace.
+vault_namespace = "admin"

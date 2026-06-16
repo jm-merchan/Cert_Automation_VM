@@ -10,6 +10,10 @@ This repository contains Terraform configurations to provision a complete certif
 
 - **[3_Static_Secrets_users](3_Static_Secrets_users/SECRETS_CONFIG.md)**: Configures Vault OIDC authentication via Auth0, user identity groups and policies, and a KV v2 secrets engine where each user gets an isolated path scoped to their identity.
 
+- **[7_GitHub_Actions_OIDC](7_GitHub_Actions_OIDC/README.md)**: Configures Vault JWT/OIDC authentication for GitHub Actions and includes a sample repository workflow that reads a Vault secret without storing a long-lived Vault token in GitHub.
+
+- **[8_Vault_Secret_Wrapping](8_Vault_Secret_Wrapping/README.md)**: Demonstrates Vault response wrapping with a static receiver frontend where a user pastes a wrapping token to unwrap a secret directly against Vault.
+
 ## Architecture Overview
 
 The infrastructure consists of:
@@ -24,6 +28,8 @@ The infrastructure consists of:
 - AWS Secrets Manager for certificate storage
 - Auth0 OIDC integration with Vault for human user authentication
 - KV v2 secrets engine with per-user isolated paths enforced via Vault identity templates
+- GitHub Actions OIDC integration with Vault for CI/CD workloads
+- Vault response wrapping for single-use secret handoff workflows
 
 ## Module Details
 
@@ -98,6 +104,17 @@ Each authenticated user can only access `secrets/data/<their-alias>/*`. See [SEC
    ```sh
    cd ../3_Static_Secrets_users
    terraform init && terraform apply -var-file="variables.tfvars"
+   ```
+6. Deploy GitHub Actions OIDC integration:
+   ```sh
+   cd ../7_GitHub_Actions_OIDC
+   terraform init && terraform apply -var-file="variables.tfvars"
+   ```
+7. Deploy Vault secret wrapping demo:
+   ```sh
+   cd ../8_Vault_Secret_Wrapping
+   terraform init && terraform apply -var-file="terraform.tfvars.example"
+   ./scripts/serve.sh
    ```
 
 See the individual module READMEs for variable configuration details.
